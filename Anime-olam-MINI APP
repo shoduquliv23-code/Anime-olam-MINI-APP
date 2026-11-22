@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anime Olam Uz — Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0b1120;
+            --bg-card: #131c31;
+            --bg-input: #1a243d;
+            --accent-blue: #2563eb;
+            --accent-yellow: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding-bottom: 90px;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(11, 17, 32, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-weight: 900;
+            font-size: 15px;
+            line-height: 1.05;
+            color: #fff;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            padding: 6px 10px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 14px 8px 34px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 18px;
+            position: relative;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 2px solid #3b82f6;
+        }
+
+        /* SECTIONS */
+        .section {
+            padding: 16px 14px 4px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .section-title i {
+            color: var(--accent-blue);
+        }
+
+        .btn-all {
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-all.yellow {
+            background: var(--accent-yellow);
+            color: #000;
+        }
+
+        /* HORIZONTAL SCROLL (MASHHUR ANIMELAR) */
+        .horizontal-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+
+        .h-card {
+            width: 135px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .poster-wrap {
+            position: relative;
+            width: 100%;
+            height: 190px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--bg-card);
+            margin-bottom: 6px;
+        }
+
+        .poster-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .badge-type {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(16, 185, 129, 0.9);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 6px;
+        }
+
+        .badge-rating {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            color: var(--accent-yellow);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 6px;
+        }
+
+        .bookmark-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .bookmark-btn.saved {
+            color: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+        }
+
+        /* SHAFFOF KO'RISH TUGMASI */
+        .glass-watch-btn {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 0;
+            border-radius: 8px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-watch-btn:active {
+            transform: scale(0.96);
+            background: rgba(37, 99, 235, 0.55);
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+
+        .card-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-meta span.star {
+            color: var(--accent-yellow);
+            font-weight: 700;
+        }
+
+        /* SO'NGGI YANGILANISHLAR (LIST) */
+        .update-card {
+            display: flex;
+            gap: 12px;
+            background: var(--bg-card);
+            padding: 10px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .update-card img {
+            width: 82px;
+            height: 115px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .update-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .update-title {
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 6px;
+        }
+
+        .ep-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .ep-row:hover {
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        .ep-name {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .ep-time {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        /* KATALOG & FILTRLAR */
+        .catalog-banner {
+            background: var(--bg-card);
+            padding: 14px;
+            border-radius: 14px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
+        }
+
+        .catalog-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .count-badge {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
+        .genre-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-top: 8px;
+            scrollbar-width: none;
+        }
+        .genre-chips::-webkit-scrollbar { display: none; }
+
+        .chip {
+            background: var(--bg-input);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .chip.active {
+            background: var(--accent-blue);
+            color: #fff;
+            border-color: var(--accent-blue);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .grid-3 .poster-wrap {
+            height: 155px;
+        }
+
+        /* BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 68px;
+            background: #0f172a;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            padding: 0 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 64px;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-yellow);
+        }
+
+        .center-orb {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8);
+            border: 4px solid #0b1120;
+            margin-top: -26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 22px;
+            box-shadow: 0 4px 18px rgba(37, 99, 235, 0.65);
+            cursor: pointer;
+        }
+
+        /* MODAL (ANIME TAFSILOTLARI) */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 8, 17, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .modal.open {
+            display: block;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .modal-hero {
+            position: relative;
+            height: 280px;
+        }
+
+        .modal-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, var(--bg-card) 8%, transparent 70%);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 0 16px 20px;
+            position: relative;
+            margin-top: -30px;
+            z-index: 5;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .modal-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .modal-desc {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .big-glass-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(37, 99, 235, 0.35);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(96, 165, 250, 0.55);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .ep-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .ep-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 10px 4px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .ep-btn:active {
+            background: var(--accent-blue);
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">ANIME<br>OLAM</div>
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="globalSearch" placeholder="Anime qidirish..." oninput="handleSearch(this.value)">
+        </div>
+        <button class="icon-btn" onclick="showRandomAnime()" title="Tasodifiy anime">
+            <i class="fa-solid fa-dice"></i>
+        </button>
+        <div class="avatar" id="userAvatar">AU</div>
+    </header>
+
+    <!-- 1-SAHIFA: BOSH SAHIFA -->
+    <main id="page-home" class="page active">
+        <section class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-star"></i> Mashhur animelar</div>
+                <button class="btn-all" onclick="switchTab('catalog')">Barchasi</button>
+            </div>
+            <div class="horizontal-scroll" id="popularContainer"></div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-bolt"></i> So'nggi yangilanishlar</div>
+                <button class="btn-all yellow" onclick="switchTab('catalog')">Katalog</button>
+            </div>
+            <div id="updatesContainer"></div>
+        </section>
+    </main>
+
+    <!-- 2-SAHIFA: KATALOG -->
+    <main id="page-catalog" class="page">
+        <section class="section">
+            <div class="catalog-banner">
+                <div class="catalog-head">
+                    <h2>Katalog</h2>
+                    <span style="color: var(--text-muted); font-size: 13px;">— o'zbekcha animelar</span>
+                    <span class="count-badge" id="catalogCount">0</span>
+                </div>
+                <div class="genre-chips" id="genreChips">
+                    <button class="chip active" onclick="filterGenre('Barchasi', this)">Barchasi</button>
+                    <button class="chip" onclick="filterGenre('Action', this)">Action</button>
+                    <button class="chip" onclick="filterGenre('Fantastika', this)">Fantastika</button>
+                    <button class="chip" onclick="filterGenre('Sarguzasht', this)">Sarguzasht</button>
+                    <button class="chip" onclick="filterGenre('Komediya', this)">Komediya</button>
+                </div>
+            </div>
+            <div class="grid-3" id="catalogGrid"></div>
+        </section>
+    </main>
+
+    <!-- 3-SAHIFA: SAQLANGANLAR -->
+    <main id="page-saved" class="page">
+        <section class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-bookmark"></i> Saqlangan animelar</div>
+            </div>
+            <div class="grid-3" id="savedGrid"></div>
+            <p id="emptySaved" style="text-align:center; color:var(--text-muted); margin-top:40px; font-size:14px;">
+                Hozircha saqlangan animelar yo'q. Kartochkadagi bayroqcha tugmasini bosing.
+            </p>
+        </section>
+    </main>
+
+    <!-- 4-SAHIFA: PROFIL VA TANGA -->
+    <main id="page-profile" class="page">
+        <section class="section">
+            <div class="catalog-banner" style="text-align:center; padding:24px 16px;">
+                <div class="avatar" id="profileBigAvatar" style="width:64px; height:64px; font-size:22px; margin:0 auto 10px;">AU</div>
+                <h3 id="profileName">Foydalanuvchi</h3>
+                <p style="color:var(--text-muted); font-size:12px; margin-top:4px;">Anime Olam Uz a'zosi</p>
+                <div style="display:flex; justify-content:center; gap:16px; margin-top:16px;">
+                    <div style="background:var(--bg-input); padding:10px 18px; border-radius:12px;">
+                        <div style="color:var(--accent-yellow); font-weight:800; font-size:16px;">150 🪙</div>
+                        <div style="font-size:11px; color:var(--text-muted);">Tangalar</div>
+                    </div>
+                    <div style="background:var(--bg-input); padding:10px 18px; border-radius:12px;">
+                        <div style="color:#60a5fa; font-weight:800; font-size:16px;" id="savedCountStat">0</div>
+                        <div style="font-size:11px; color:var(--text-muted);">Saqlangan</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL OYNA (ANIME ICHKI SAHIFASI) -->
+    <div class="modal" id="animeModal">
+        <div class="modal-card">
+            <div class="modal-hero">
+                <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+                <img id="modalImg" src="" alt="">
+            </div>
+            <div class="modal-body">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <div class="modal-tags" id="modalTags"></div>
+                <p class="modal-desc" id="modalDesc"></p>
+                
+                <!-- SHAFFOF ASOSIY KO'RISH TUGMASI -->
+                <button class="big-glass-btn" id="modalMainWatchBtn">
+                    <i class="fa-solid fa-play"></i> Bot orqali ko'rish
+                </button>
+
+                <h4 style="font-size:14px; margin-bottom:10px; color:var(--text-muted);">Qismlarni tanlang:</h4>
+                <div class="ep-grid" id="modalEpisodes"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASTKI NAVIGATSIYA -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('home', this)">
+            <i class="fa-solid fa-house"></i>
+            <span>Asosiy</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('catalog', this)">
+            <i class="fa-solid fa-table-cells-large"></i>
+            <span>Katalog</span>
+        </button>
+        <div class="center-orb" onclick="showRandomAnime()">
+            <i class="fa-solid fa-play"></i>
+        </div>
+        <button class="nav-item" onclick="switchTab('saved', this)">
+            <i class="fa-regular fa-bookmark"></i>
+            <span>Saqlangan</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('profile', this)">
+            <i class="fa-solid fa-coins"></i>
+            <span>Profil</span>
+        </button>
+    </nav>
+
+    <script>
+        // BOT USERNAME (O'zingiznikini tekshiring)
+        const BOT_USERNAME = "AnimeOlamUzBot";
+
+        // TELEGRAM WEBAPP INIT
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                const initials = (user.first_name?.[0] || "A") + (user.last_name?.[0] || "U");
+                document.getElementById("userAvatar").innerText = initials.toUpperCase();
+                document.getElementById("profileBigAvatar").innerText = initials.toUpperCase();
+                document.getElementById("profileName").innerText = user.first_name;
+            }
+        }
+
+        // ANIMELAR BAZASI (Shu yerga yangi animelarni qo'shib borasiz)
+        const ANIME_DATA = [
+            {
+                id: "solo_leveling",
+                botCode: "101", // Botdagi post kodi (?start=anime_101)
+                title: "Yolg'iz Daraja Ko'tarish (Solo Leveling)",
+                type: "TV Serial",
+                genre: "Action",
+                rating: "9.9",
+                episodesCount: 12,
+                poster: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx151807-it355ZgzquUd.png",
+                desc: "Eng kuchsiz ovchi Sung Jin-Woo sirli zindonda o'lim yoqasidan qaytib, faqat o'zigagina ko'rinadigan tizim orqali cheksiz kuchayish qobiliyatiga ega bo'ladi.",
+                recentUpdates: [
+                    { ep: 12, time: "2 soat oldin" },
+                    { ep: 11, time: "1 kun oldin" },
+                    { ep: 10, time: "3 kun oldin" }
+                ]
+            },
+            {
+                id: "jujutsu_kaisen",
+                botCode: "102",
+                title: "Jodugarlar Jangi (Jujutsu Kaisen)",
+                type: "TV Serial",
+                genre: "Fantastika",
+                rating: "9.8",
+                episodesCount: 24,
+                poster: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx113415-bbBWj4pEFseh.jpg",
+                desc: "Yuji Itadori la'natlangan barmoqni yutib yuborgach, eng qudratli iblis Ryomen Sukunaning idishiga aylanadi va jodugarlar maktabiga qo'shiladi.",
+                recentUpdates: [
+                    { ep: 24, time: "5 soat oldin" },
+                    { ep: 23, time: "2 kun oldin" }
+                ]
+            },
+            {
+                id: "demon_slayer",
+                botCode: "103",
+                title: "Iblislar Qotili (Demon Slayer)",
+                type: "TV Serial",
+                genre: "Sarguzasht",
+                rating: "9.7",
+                episodesCount: 26,
+                poster: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101922-PEn1CTc93blC.jpg",
+                desc: "Oilasi iblislar tomonidan yo'q qilingan Tanjiro Kamado iblisga aylangan singlisi Nezukoni yana insonga aylantirish uchun qilichbozlik yo'liga kiradi.",
+                recentUpdates: [
+                    { ep: 26, time: "1 kun oldin" },
+                    { ep: 25, time: "4 kun oldin" }
+                ]
+            },
+            {
+                id: "mashle",
+                botCode: "104",
+                title: "Mashle: Sehr va Mushaklar",
+                type: "TV Serial",
+                genre: "Komediya",
+                rating: "9.4",
+                episodesCount: 12,
+                poster: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx151801-0g6b6k4h1s3L.jpg",
+                desc: "Sehr-jodu hamma narsani hal qiladigan dunyoda umuman sehri yo'q Mash Burnedead faqat tinimsiz mashq qilingan mushaklari bilan barchani mag'lub etadi.",
+                recentUpdates: [
+                    { ep: 12, time: "3 kun oldin" }
+                ]
+            }
+        ];
+
+        let savedIds = JSON.parse(localStorage.getItem("saved_animes") || "[]");
+        let currentGenre = "Barchasi";
+
+        // BOTGA O'TISH FUNKSIYASI (SHFFOF TUGMA BOSILGANDA)
+        function openInBot(botCode, ep = 1, event) {
+            if (event) event.stopPropagation();
+            const param = `anime_${botCode}_ep_${ep}`;
+            const url = `https://t.me/${BOT_USERNAME}?start=${param}`;
+            if (tg && tg.openTelegramLink) {
+                tg.openTelegramLink(url);
+            } else {
+                window.open(url, "_blank");
+            }
+        }
+
+        // SAQLASH (BOOKMARK)
+        function toggleSave(id, event) {
+            if (event) event.stopPropagation();
+            if (savedIds.includes(id)) {
+                savedIds = savedIds.filter(item => item !== id);
+            } else {
+                savedIds.push(id);
+            }
+            localStorage.setItem("saved_animes", JSON.stringify(savedIds));
+            renderAll();
+        }
+
+        // KARTOCHKA SHABLONI
+        function createCardHTML(anime, isGrid = false) {
+            const isSaved = savedIds.includes(anime.id);
+            return `
+                <div class="${isGrid ? '' : 'h-card'}" onclick="openModal('${anime.id}')">
+                    <div class="poster-wrap">
+                        <img src="${anime.poster}" alt="${anime.title}" loading="lazy">
+                        <span class="badge-type">${anime.genre}</span>
+                        <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSave('${anime.id}', event)">
+                            <i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark"></i>
+                        </button>
+                        <button class="glass-watch-btn" onclick="openInBot('${anime.botCode}', 1, event)">
+                            <i class="fa-solid fa-play"></i> Ko'rish
+                        </button>
+                    </div>
+                    <div class="card-title">${anime.title}</div>
+                    <div class="card-meta">
+                        <span class="star">★ ${anime.rating}</span> • ${anime.episodesCount} qism
+                    </div>
+                </div>
+            `;
+        }
+
+        // BARCHA BO'LIMLARNI CHIZISH
+        function renderAll(searchQuery = "") {
+            const filtered = ANIME_DATA.filter(a => {
+                const matchSearch = a.title.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchGenre = currentGenre === "Barchasi" || a.genre === currentGenre;
+                return matchSearch && matchGenre;
+            });
+
+            // Mashhur animelar
+            document.getElementById("popularContainer").innerHTML = ANIME_DATA.map(a => createCardHTML(a, false)).join("");
+
+            // So'nggi yangilanishlar
+            document.getElementById("updatesContainer").innerHTML = ANIME_DATA.map(a => `
+                <div class="update-card" onclick="openModal('${a.id}')">
+                    <img src="${a.poster}" alt="${a.title}">
+                    <div class="update-info">
+                        <div class="update-title">${a.title}</div>
+                        <div>
+                            ${a.recentUpdates.map(u => `
+                                <div class="ep-row" onclick="openInBot('${a.botCode}', ${u.ep}, event)">
+                                    <span class="ep-name">${u.ep}-qism</span>
+                                    <span class="ep-time">${u.time}</span>
+                                </div>
+                            `).join("")}
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+
+            // Katalog
+            document.getElementById("catalogCount").innerText = filtered.length;
+            document.getElementById("catalogGrid").innerHTML = filtered.map(a => createCardHTML(a, true)).join("");
+
+            // Saqlanganlar
+            const savedList = ANIME_DATA.filter(a => savedIds.includes(a.id));
+            document.getElementById("savedCountStat").innerText = savedList.length;
+            document.getElementById("emptySaved").style.display = savedList.length ? "none" : "block";
+            document.getElementById("savedGrid").innerHTML = savedList.map(a => createCardHTML(a, true)).join("");
+        }
+
+        function handleSearch(val) {
+            if (val.trim().length > 0) switchTab('catalog');
+            renderAll(val);
+        }
+
+        function filterGenre(genre, btn) {
+            currentGenre = genre;
+            document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+            btn.classList.add("active");
+            renderAll(document.getElementById("globalSearch").value);
+        }
+
+        function switchTab(tabName, btn) {
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.getElementById(`page-${tabName}`).classList.add("active");
+            if (btn) {
+                document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+                btn.classList.add("active");
+            }
+        }
+
+        // MODAL OYNANI OCHISH
+        function openModal(id) {
+            const anime = ANIME_DATA.find(a => a.id === id);
+            if (!anime) return;
+
+            document.getElementById("modalImg").src = anime.poster;
+            document.getElementById("modalTitle").innerText = anime.title;
+            document.getElementById("modalTags").innerHTML = `
+                <span style="color:var(--accent-yellow); font-weight:700;">★ ${anime.rating}</span>
+                <span>• ${anime.genre}</span>
+                <span>• ${anime.episodesCount} qism</span>
+            `;
+            document.getElementById("modalDesc").innerText = anime.desc;
+            document.getElementById("modalMainWatchBtn").onclick = () => openInBot(anime.botCode, 1);
+
+            let epsHTML = "";
+            for (let i = 1; i <= anime.episodesCount; i++) {
+                epsHTML += `<button class="ep-btn" onclick="openInBot('${anime.botCode}', ${i})">${i}-qism</button>`;
+            }
+            document.getElementById("modalEpisodes").innerHTML = epsHTML;
+            document.getElementById("animeModal").classList.add("open");
+        }
+
+        function closeModal() {
+            document.getElementById("animeModal").classList.remove("open");
+        }
+
+        function showRandomAnime() {
+            const rnd = ANIME_DATA[Math.floor(Math.random() * ANIME_DATA.length)];
+            openModal(rnd.id);
+        }
+
+        renderAll();
+    </script>
+</body>
+</html>
